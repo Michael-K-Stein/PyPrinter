@@ -10,7 +10,7 @@ import subprocess
 import tqdm
 from colorama import Fore, Style
 
-from settings import get_delimiter, is_verbose_mode, use_tqdm
+from .settings import get_delimiter, is_verbose_mode, use_tqdm
 
 
 class ExternalProcedureException(Exception):

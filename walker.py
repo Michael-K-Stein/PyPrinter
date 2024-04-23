@@ -5,14 +5,14 @@ from typing import Any, Callable
 
 import tqdm
 
-from printer import print_log
+from .printer import print_log
 
 
 def _walk_files_internal(
     root: str,
     current_dir: str,
     callback: Callable[[str, str], None],
-    file_name_regex: str | re.Pattern[str] | None = None,
+    compiled_pattern: re.Pattern[str],
     progress_bar: tqdm.tqdm | None = None,
 ) -> None:
     """
@@ -22,18 +22,17 @@ def _walk_files_internal(
         root (str): The root directory to start the search from.
         current_dir (str): The current directory being processed.
         callback (Callable[[str, str], None]): The callback function to apply to matching files.
-        file_name_regex (str | re.Pattern[str] | None): A regular expression pattern to match file names.
+        compiled_pattern (re.Pattern[str]): A regular expression pattern to match file names.
         progress_bar (tqdm.tqdm | None): An optional progress bar.
 
     Returns:
         None: The function returns nothing.
     """
-    compiled_pattern: re.Pattern[Any] = re.compile(file_name_regex, re.I)
     for entry in os.scandir(current_dir):
-        full_path = os.path.join(root, entry.path)
+        full_path = entry.path
         if entry.is_dir():
             _walk_files_internal(
-                root, full_path, callback, file_name_regex, progress_bar
+                root, full_path, callback, compiled_pattern, progress_bar
             )
         elif entry.is_file() and compiled_pattern.search(entry.name):
             callback(root, full_path)
@@ -72,15 +71,21 @@ def walk_files(
         walk_files('/path/to/directory', print_text_files, r'.*\.txt$')
         ```
     """
-    file_name_regex = file_name_regex if file_name_regex else r""
+    if file_name_regex is None:
+        file_name_regex = r".*"
+    if isinstance(file_name_regex, str):
+        compiled_pattern: re.Pattern[Any] = re.compile(file_name_regex, re.I)
+    else:
+        compiled_pattern = file_name_regex
+
     progress_bar = tqdm.tqdm(total=0, unit="file(s)", desc="Walking Directory")
 
     def count_total_files(file_path, file_name):
         progress_bar.reset(progress_bar.total + 1)
 
     print_log(f"Calculating directory size...")
-    _walk_files_internal(root, root, count_total_files, file_name_regex)
-    _walk_files_internal(root, root, callback, file_name_regex, progress_bar)
+    _walk_files_internal(root, root, count_total_files, compiled_pattern)
+    _walk_files_internal(root, root, callback, compiled_pattern, progress_bar)
 
 
 def validate_file_path(file_path):
