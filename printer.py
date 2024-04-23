@@ -14,23 +14,60 @@ from settings import get_delimiter, is_verbose_mode, use_tqdm
 
 
 class ExternalProcedureException(Exception):
+    """
+    Exception raised when an external procedure returns a non-zero code.
+    """
+
     pass
 
 
 def write(s, **kwargs):
+    """
+    Writes a string to the console.
+
+    Args:
+        s (str): The string to write.
+        **kwargs: Arbitrary keyword arguments.
+    """
     print_function = tqdm.tqdm.write if use_tqdm() else print
     print_function(s, **kwargs)
 
 
 def _concat_arguments(s, *args) -> str:
+    """
+    Concatenates arguments with a delimiter.
+
+    Args:
+        s (str): The initial string.
+        *args: Variable length argument list.
+
+    Returns:
+        str: The concatenated string.
+    """
     return f"{get_delimiter()}".join(str(x) for x in (s, *args))
 
 
 def print_info(s, *args, **kwargs):
+    """
+    Prints an info message.
+
+    Args:
+        s (str): The initial string.
+        *args: Variable length argument list.
+        **kwargs: Arbitrary keyword arguments.
+    """
     write("[~] " + _concat_arguments(s, *args), **kwargs)
 
 
 def print_log(s, *args, **kwargs):
+    """
+    Prints a log message if verbose mode is enabled.
+
+    Args:
+        s (str): The initial string.
+        *args: Variable length argument list.
+        **kwargs: Arbitrary keyword arguments.
+    """
     if not is_verbose_mode():
         return
     write(
@@ -40,10 +77,26 @@ def print_log(s, *args, **kwargs):
 
 
 def print_success(s, *args, **kwargs):
+    """
+    Prints a success message.
+
+    Args:
+        s (str): The initial string.
+        *args: Variable length argument list.
+        **kwargs: Arbitrary keyword arguments.
+    """
     write(Fore.CYAN + "[+] " + _concat_arguments(s, *args) + Style.RESET_ALL, **kwargs)
 
 
 def print_error(s, *args, **kwargs):
+    """
+    Prints an error message.
+
+    Args:
+        s (str): The initial string.
+        *args: Variable length argument list.
+        **kwargs: Arbitrary keyword arguments.
+    """
     write(Fore.RED + "[!] " + _concat_arguments(s, *args) + Style.RESET_ALL, **kwargs)
 
 
