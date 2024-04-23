@@ -1,0 +1,4 @@
+tqdm
+types-tqdm
+colorama
+types-colorama
